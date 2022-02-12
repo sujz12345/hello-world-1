@@ -1,15 +1,98 @@
-= Hello World 项目 =
-Hello World 项目是一个用 C 语言开发的演示项目，主要用于版本控制系统的演示。有 svn 和 hg 两种不同的版本，
-分别用 Subversion 和 Mercurial 做版本控制，以演示两种版本库维护第三方版本库的高下。
 
-本项目作为 svn 版本库维护的上游版本，对应的下游版本项目页，参见： [[//trac/hello-svn-hacks]]
+# 问题
 
-相关的概念
- * '''上游版本库''': 
-   无权在该版本库中 Checkin，如果需要对其中的代码进行定制，只能通过 fork ── 本地重建版本库的方式。
- * '''下游版本库''': 
-   自己或自己所在的团队，为了修改上游版本库而另外建立的版本库。该版本库用于镜像上游代码，以及维护代码定制。
- * '''卖主分支''': 
-   使用 Subversion 作为下游版本库维护代码，采用的方法称为卖主分支。即使用一个分支专门用于镜像上游版本库的代码，在主线维护包含定制的代码。
- * '''Hg + MQ''': 
-   使用 Mercurial(Hg) 以及 Hg 内置的 MQ 插件来维护下游版本库，是一种更为有效的方法。尤其是对上游的定制相当的多和复杂的情况，可以大大减少由于上游版本频繁升级带来的维护负担。这种方法实际上维护的是一系列补丁文件，这些补丁文件使用的是 [[http://savannah.nongnu.org/projects/quilt|quilt]] 格式。
+给定一个整数数组nums和一个整数目标值 target，请你在该数组中找出 和为目标值 target的那两个整数，并返回它们的数组下标。
+
+你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+
+你可以按任意顺序返回答案。
+
+
+
+示例 1：
+
+```
+输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+```
+示例 2：
+
+```
+输入：nums = [3,2,4], target = 6  
+输出：[1,2]
+```
+示例 3：
+
+```
+输入：nums = [3,3], target = 6  
+输出：[0,1]
+```
+
+# 方法一：暴力枚举
+## 思路及算法
+
+最容易想到的方法是枚举数组中的每一个数 x，寻找数组中是否存在 target - x。
+
+当我们使用遍历整个数组的方式寻找 target - x 时，需要注意到每一个位于 x 之前的元素都已经和 x 匹配过，因此不需要再进行匹配。而每一个元素不能被使用两次，所以我们只需要在 x 后面的元素中寻找 target - x。
+
+## 代码
+
+```Java
+
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        int n = nums.length;
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                if (nums[i] + nums[j] == target) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return new int[0];
+    }
+}
+```
+## 复杂度分析
+
+- 时间复杂度：O( N^2 )，其中 NN 是数组中的元素数量。最坏情况下数组中任意两个数都要被匹配一次。
+- 空间复杂度：O(1)O(1)。
+
+# 方法二：哈希表
+## 思路及算法
+
+注意到方法一的时间复杂度较高的原因是寻找 target - x 的时间复杂度过高。因此，我们需要一种更优秀的方法，能够快速寻找数组中是否存在目标元素。如果存在，我们需要找出它的索引。
+
+使用哈希表，可以将寻找 target - x 的时间复杂度降低到从 O(N)O(N) 降低到 O(1)O(1)。
+
+这样我们创建一个哈希表，对于每一个 x，我们首先查询哈希表中是否存在 target - x，然后将 x 插入到哈希表中，即可保证不会让 x 和自己匹配。
+
+## 代码
+
+```Java
+
+class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> hashtable = new HashMap<Integer, Integer>();
+        for (int i = 0; i < nums.length; ++i) {
+            if (hashtable.containsKey(target - nums[i])) {
+                return new int[]{hashtable.get(target - nums[i]), i};
+            }
+            hashtable.put(nums[i], i);
+        }
+        return new int[0];
+    }
+}
+```
+## 复杂度分析
+
+- 时间复杂度：O(N)，其中 NN 是数组中的元素数量。对于每一个元素 x，我们可以 O(1) 地寻找 target - x。
+
+- 空间复杂度：O(N)，其中 NN 是数组中的元素数量。主要为哈希表的开销。
+
+
+> 来源：力扣（LeetCode）
+链接：https://leetcode-cn.com/problems/two-sum
+著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
+
